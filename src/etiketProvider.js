@@ -14,19 +14,21 @@ export default {
         const { page, perPage } = params.pagination;
         const { field, order } = params.sort;
         const {tgl_non_aktif} = params.filter;
+        const {jenis} = params.filter;
         let is_aktif = tgl_non_aktif ? 'F' : 'T'; 
         const query = {
             order_by: JSON.stringify(field),
             limit: JSON.stringify(perPage),
             offset: JSON.stringify((page - 1)),
             is_aktif: is_aktif,
+            jenis: jenis,
             // filter: JSON.stringify(params.filter),
         };
         const url = `${apiUrl}/${resource}/load?${stringify(query)}`;
         // const total = getTotal(resource,params)
         return httpClient(url).then(({ headers, json }) => ({
             data: json.data,
-            total:json.data[0].jml_data,
+            total:json.data[0]?json.data[0].jml_data:0,
             // total: total.total,
             // total: parseInt(headers.get('content-range').split('/').pop(), 10),
         }));
@@ -75,7 +77,7 @@ export default {
                 ...params.data,
             }),
         }).then(({ json }) => ({
-            data: { ...params.data, id:1 },
+            data: { ...params.data, id:0 },
         })),
 
     delete: (resource, params) =>

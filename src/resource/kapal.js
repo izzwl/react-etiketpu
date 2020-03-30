@@ -14,6 +14,7 @@ import CardHeader from '@material-ui/core/CardHeader';
 import { useRefresh, useNotify, useRedirect, Button } from 'react-admin';
 import {Clear} from '@material-ui/icons'
 import axios from 'axios';
+import { API_URL } from '../settings';
 
 const ApproveButton = ({ record }) => {
     const notify = useNotify();
@@ -21,7 +22,7 @@ const ApproveButton = ({ record }) => {
     const refresh = useRefresh();
     const approve = () => {
         return axios.post(
-        'http://localhost/e_tiket_api/public/master_kapal/aktivasi',{
+        API_URL+'master_kapal/aktivasi',{
             tgl_non_aktif: new Date(), id:record.id
         }
       ).then((response)=>{

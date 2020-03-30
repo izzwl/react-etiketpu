@@ -16,10 +16,11 @@ import { useRefresh, useNotify, useRedirect, useCreate, Button } from 'react-adm
 import { useForm } from 'react-final-form';
 import {Clear} from '@material-ui/icons'
 import axios from 'axios';
-const userType = [
-    { id: '1', name: 'Staff' },
-    { id: '2', name: 'User' },
-    { id: '3', name: 'Admin' },
+import { API_URL } from '../settings';
+
+export const userType = [
+    { id: '1', name: 'Admin' },
+    { id: '2', name: 'Operator' },
 ]
 
 const SaveWithNoteButton = ({ handleSubmitWithRedirect, ...props }) => {
@@ -58,7 +59,7 @@ const ApproveButton = ({ record }) => {
     const refresh = useRefresh();
     const approve = () => {
         return axios.post(
-        'http://localhost/e_tiket_api/public/system_user/aktivasi',{
+        API_URL+'system_user/aktivasi',{
             tgl_non_aktif: new Date(), id:record.id
         }
       ).then((response)=>{
@@ -91,7 +92,7 @@ export const UserList = (props) => {
         <List {...props} title='Master User' className={'my-datagrid'} filters={<UserFilter/>} bulkActionButtons={false} exporter={true}>
             {isSmall ? (
             <SimpleList
-                primaryText={record => `${record.Nama}`}
+                primaryText={record => `${record.nama}`}
                 secondaryText={record => `${record.user_id}`}
                 tertiaryText={record => `${record.tipe}`}
             />

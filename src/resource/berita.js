@@ -1,19 +1,42 @@
-import React from 'react';
+import React , {useCallback} from 'react';
 import { 
     List, Edit, Create, Show, DatagridBody, Datagrid, TextField, EmailField, UrlField, 
     EditButton, SimpleForm, TextInput, Filter, ReferenceInput, SelectInput,
     SimpleList, SimpleShowLayout, RichTextField, BooleanInput, ImageField,
-    ImageInput,FileField,FileInput
+    ImageInput,FileField,FileInput,SaveButton,Toolbar
 } from 'react-admin';
+import RichTextInput from 'ra-input-rich-text';
 import { useMediaQuery } from '@material-ui/core';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
-import { useRefresh, useNotify, useRedirect, Button } from 'react-admin';
+import { useRefresh, useNotify, useRedirect, Button, useCreate } from 'react-admin';
+import { useForm } from 'react-final-form';
+
 import {Clear} from '@material-ui/icons'
 import axios from 'axios';
+import { API_URL } from '../settings';
+
+const SaveWithNoteButton = ({ handleSubmitWithRedirect, ...props }) => {
+    const [create] = useCreate('berita');
+    const redirectTo = useRedirect();
+    const notify = useNotify();
+    const { basePath, redirect } = props;
+    const form = useForm();
+    const handleClick = useCallback(() => {
+        // change the average_note field value
+        form.change('user_id', localStorage.getItem('username'));
+        handleSubmitWithRedirect(props.redirect);
+    }, [form]);
+    // override handleSubmitWithRedirect with custom logic
+    return <SaveButton {...props} handleSubmitWithRedirect={handleClick} />;
+};
+const CreateToolbar = props => (
+    <Toolbar {...props}><SaveWithNoteButton label="Save" redirect="list" submitOnEnter={true} /*variant="text"*/ /></Toolbar>
+);
+const EditToolbar = CreateToolbar;
 
 const ApproveButton = ({ record }) => {
     const notify = useNotify();
@@ -21,7 +44,7 @@ const ApproveButton = ({ record }) => {
     const refresh = useRefresh();
     const approve = () => {
         return axios.post(
-        'http://localhost/e_tiket_api/public/berita/aktivasi',{
+        API_URL+'berita/aktivasi',{
             tgl_non_aktif: new Date(), id:record.id
         }
       ).then((response)=>{
@@ -57,12 +80,12 @@ const TglField = ({ record = {}, source }) => {
     return <span>-</span>
 }
 const UploadFoto = (e,data) => {
-    console.log(data);   
+    // console.log(data);   
     let formdata = new FormData();
     formdata.set('foto',e);
     formdata.set('id',data.id);
     axios({
-        url:'http://localhost/e_tiket_api/public/berita/uploadfoto',
+        url: API_URL+'berita/uploadfoto',
         method:'POST',
         data:formdata,
     }
@@ -74,12 +97,7 @@ const UploadFoto = (e,data) => {
 const BeritaFilter = (props) => (
     <Filter {...props}>
         {/* <TextInput label="Search" source="q" alwaysOn /> */}
-        <BooleanInput
-            alwaysOn
-            source="tgl_non_aktif"
-            label="Berita Non Aktif"
-            defaultValue={false}
-            />
+        <BooleanInput alwaysOn source="tgl_non_aktif" label="Berita Non Aktif" defaultValue={false} />
         {/* <ReferenceInput label="User" source="userId" reference="users" allowEmpty>
             <SelectInput optionText="name" />
         </ReferenceInput> */}
@@ -129,14 +147,14 @@ export const BeritaEdit = props => {
     }
     return(
         <Edit {...props} title={'Ubah berita'} successMessage="Data berhasil diubah">
-            <SimpleForm redirect="list"  encType={'multipart/form-data'}>
+            <SimpleForm redirect="list"  encType={'multipart/form-data'} toolbar={<EditToolbar/>}>
                 {/* <TextInput disabled hidden source="id" /> */}
                 {/* <ReferenceInput source="userId" reference="users">
                 <SelectInput optionText="name" />
                 </ReferenceInput> */}
                 <TextInput fullWidth={false} source="kode"/>
                 <TextInput fullWidth={false} source="judul" />
-                <TextInput fullWidth={false} multiline source="isi" />
+                <RichTextInput fullWidth={false} multiline source="isi" />
                 {/* <input type='file' source='foto' name='foto' /> */}
 
                 <ImageInput source="foto" label="Foto berita" accept="image/*" onChange={(e)=>UploadFoto(e,data)}>
@@ -148,14 +166,14 @@ export const BeritaEdit = props => {
 };
 export const BeritaCreate = props => (
     <Create {...props} title={'Buat berita'}>
-        <SimpleForm redirect="list"  encType={'multipart/form-data'}>
+        <SimpleForm redirect="list"  encType={'multipart/form-data'} toolbar={<EditToolbar/>}>
             {/* <TextInput disabled hidden source="id" /> */}
             {/* <ReferenceInput source="userId" reference="users">
                <SelectInput optionText="name" />
             </ReferenceInput> */}
             <TextInput fullWidth={false} source="kode" />
             <TextInput fullWidth={false} source="judul" />
-            <TextInput fullWidth={false} multiline source="isi" />
+            <RichTextInput fullWidth={false} multiline source="isi" />
            
 
         </SimpleForm>
